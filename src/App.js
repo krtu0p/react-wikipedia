@@ -10,25 +10,28 @@ function App() {
     const [error, setError] = useState('');
 
     const handleSearch = async (e) => {
-        e.preventDefault();
-        setSearchAttempted(true);
-        setError(''); // Reset error message on new search
-        try {
-            // Use the API URL from the environment variable
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/search?q=${searchTerm}`);
-            console.log('API Response:', response.data); // Log the full response for debugging
-            // Check if results exist before accessing them
-            if (response.data && response.data.results) {
-                setResults(response.data.results); // Ensure response.data.results matches your API response structure
-            } else {
-                setResults([]); // Clear results if no results are found
-                setError('No results found.');
-            }
-        } catch (error) {
-            console.error('Error fetching search results:', error);
-            setError('Failed to fetch search results. Please try again.');
+    e.preventDefault();
+    setSearchAttempted(true);
+    setError(''); // 
+    
+    const formattedSearchTerm = searchTerm.replace(/ /g, '_');
+
+    try {
+        
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/search?q=${formattedSearchTerm}`);
+        console.log('API Response:', response.data); 
+
+        if (response.data && response.data.results) {
+            setResults(response.data.results); 
+        } else {
+            setResults([]); 
+            setError('No results found.');
         }
-    };
+    } catch (error) {
+        console.error('Error fetching search results:', error);
+        setError('Failed to fetch search results. Please try again.');
+    }
+};
 
     const handleResultClick = async (pageId) => {
         try {
