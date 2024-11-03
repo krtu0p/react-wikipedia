@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-
+import parse from 'html-react-parser';
 import './App.css';
 
 function App() {
