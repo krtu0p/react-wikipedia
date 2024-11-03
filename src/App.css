@@ -85,4 +85,14 @@ button:hover {
 .article-content a:hover {
   text-decoration: underline;
 }
+.article-content img {
+  max-width: 80%;    /* Limits width to 80% of container */
+  max-height: 300px; /* Limits height to 300px */
+  width: auto;       /* Maintains aspect ratio */
+  height: auto;
+  display: block;
+  margin: 0 auto;    /* Centers image within its container */
+}
+
+
 

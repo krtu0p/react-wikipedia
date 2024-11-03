@@ -52,19 +52,27 @@ function App() {
                 if (domNode.name === 'img' && domNode.attribs && domNode.attribs.src) {
                     const src = domNode.attribs.src.startsWith('http') 
                         ? domNode.attribs.src 
-                        : `https:${domNode.attribs.src}`; // Ensure it's an absolute URL
-    
+                        : `https:${domNode.attribs.src}`;
+                    
                     return (
                         <img 
                             src={src} 
-                            alt={articleTitle || 'Image'} // Provide a fallback alt text
-                            style={{ width: '100%', height: 'auto' }} 
+                            alt={articleTitle || 'Image'}
+                            style={{
+                                width: 'auto',
+                                maxWidth: '80%',
+                                maxHeight: '300px',
+                                height: 'auto',
+                                margin: '0 auto',
+                                display: 'block'
+                            }} 
                         />
                     );
                 }
             }
         });
     };
+    
 
     return (
         <div className="App">
