@@ -7,7 +7,7 @@ function App() {
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState([]);
     const [articleContent, setArticleContent] = useState('');
-    const [articleTitle, setArticleTitle] = useState(''); // To hold the current article's title
+    const [articleTitle, setArticleTitle] = useState('');
     const [searchAttempted, setSearchAttempted] = useState(false);
     const [previousArticles, setPreviousArticles] = useState([]);
 
@@ -29,20 +29,25 @@ function App() {
     const fetchArticle = async (pageId) => {
         try {
             const response = await axios.get(`https://en.wikipedia.org/w/api.php?action=parse&pageid=${pageId}&format=json&origin=*`);
-            setPreviousArticles(prev => [...prev, articleContent]); // Store the previous article content
-            setArticleTitle(response.data.parse.title); // Set article title for better accessibility
+            if (articleContent) {
+                setPreviousArticles((prev) => [...prev, { title: articleTitle, content: articleContent }]);
+            }
+            setArticleTitle(response.data.parse.title);
             setArticleContent(response.data.parse.text['*']);
         } catch (error) {
             console.error('Error fetching article content:', error);
         }
     };
 
-
     const handleBack = () => {
         if (previousArticles.length > 0) {
-            const lastArticle = previousArticles.pop(); // Get the last article content
-            setArticleContent(lastArticle); // Set the content to the last article
-            setPreviousArticles(previousArticles); // Update previousArticles array
+            const lastArticle = previousArticles[previousArticles.length - 1];
+            setPreviousArticles(previousArticles.slice(0, -1)); // Remove the last article from the array
+            setArticleContent(lastArticle.content);
+            setArticleTitle(lastArticle.title);
+        } else {
+            setArticleContent('');
+            setArticleTitle('');
         }
     };
 
@@ -69,10 +74,52 @@ function App() {
                         />
                     );
                 }
+
+                if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {
+                    const href = domNode.attribs.href;
+                    const pageTitleMatch = href.match(/\/wiki\/(.+)/);
+                    
+                    if (pageTitleMatch && pageTitleMatch[1]) {
+                        const pageTitle = pageTitleMatch[1];
+
+                        return (
+                            <button 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    fetchArticleByTitle(pageTitle);
+                                }}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'blue',
+                                    textDecoration: 'underline',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                }}
+                            >
+                                {domNode.children[0]?.data || 'Link'}
+                            </button>
+                        );
+                    }
+                }
+
+                return null;
             }
         });
     };
-    
+
+    const fetchArticleByTitle = async (title) => {
+        try {
+            const response = await axios.get(`https://en.wikipedia.org/w/api.php?action=parse&page=${title}&format=json&origin=*`);
+            if (articleContent) {
+                setPreviousArticles((prev) => [...prev, { title: articleTitle, content: articleContent }]);
+            }
+            setArticleTitle(response.data.parse.title);
+            setArticleContent(response.data.parse.text['*']);
+        } catch (error) {
+            console.error('Error fetching article content:', error);
+        }
+    };
 
     return (
         <div className="App">
@@ -92,7 +139,7 @@ function App() {
                     results.map((result) => (
                         <button key={result.pageid} onClick={() => handleResultClick(result.pageid)} className="result-item">
                             <h3>{result.title}</h3>
-                            <p>{parse(result.snippet)} {/* Parse the snippet if it contains HTML */}</p>
+                            <p>{parse(result.snippet)}</p>
                         </button>
                     ))
                 ) : (
@@ -101,17 +148,18 @@ function App() {
             </div>
 
             {articleContent && (
-                <div className="article-container">
-                    <h2 className="article-title">Article Details</h2>
-                    <div className="article-content">
-                        {renderContent(articleContent)} {/* Render parsed content here */}
+                <>
+                    <div className="article-container">
+                    <button onClick={handleBack} disabled={previousArticles.length === 0}>Back</button>
+                        <h2 className="article-title">{articleTitle}</h2>
+                        <div className="article-content">
+                            {renderContent(articleContent)}
+                        </div>
                     </div>
-                    <button onClick={handleBack}>Back</button>
-                </div>
+                </>
             )}
         </div>
     );
 }
 
 export default App;
-
