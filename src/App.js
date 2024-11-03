@@ -15,7 +15,7 @@ function App() {
         e.preventDefault();
         setSearchAttempted(true);
         try {
-            const response = await axios.get(`http://localhost:8000/search?q=${searchTerm}`);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/search?q=${searchTerm}`);
             setResults(response.data.results);
         } catch (error) {
             console.error('Error fetching search results:', error);
@@ -37,21 +37,6 @@ function App() {
         }
     };
 
-    const handleLinkClick = (event, title) => {
-        event.preventDefault();
-        loadArticleByTitle(title);
-    };
-
-    const loadArticleByTitle = async (title) => {
-        try {
-            const response = await axios.get(`https://en.wikipedia.org/w/api.php?action=parse&page=${title}&format=json&origin=*`);
-            setPreviousArticles(prev => [...prev, articleContent]); // Store the previous article content
-            setArticleTitle(response.data.parse.title); // Set article title
-            setArticleContent(response.data.parse.text['*']);
-        } catch (error) {
-            console.error('Error loading article by title:', error);
-        }
-    };
 
     const handleBack = () => {
         if (previousArticles.length > 0) {
@@ -64,22 +49,15 @@ function App() {
     const renderContent = (htmlContent) => {
         return parse(htmlContent, {
             replace: (domNode) => {
-                if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {
-                    const title = domNode.attribs.href.split('/').pop();
-                    return (
-                        <button
-                            style={{ background: 'none', color: 'blue', textDecoration: 'underline', border: 'none', cursor: 'pointer' }}
-                            onClick={(event) => handleLinkClick(event, title)}
-                        >
-                            {domNode.children[0].data}
-                        </button>
-                    );
-                }
                 if (domNode.name === 'img' && domNode.attribs && domNode.attribs.src) {
+                    const src = domNode.attribs.src.startsWith('http') 
+                        ? domNode.attribs.src 
+                        : `https:${domNode.attribs.src}`; // Ensure it's an absolute URL
+    
                     return (
                         <img 
-                            src={domNode.attribs.src} 
-                            alt={articleTitle} // Use the title as alt text for accessibility
+                            src={src} 
+                            alt={articleTitle || 'Image'} // Provide a fallback alt text
                             style={{ width: '100%', height: 'auto' }} 
                         />
                     );
@@ -128,3 +106,4 @@ function App() {
 }
 
 export default App;
+
