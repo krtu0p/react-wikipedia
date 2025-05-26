@@ -124,6 +124,8 @@ function App() {
     return (
         <div className="App">
             <h1>Wikipedia Search Engine</h1>
+        <h1>Wikipedia Search Engine</h1>
+<p style={{ color: 'red', fontWeight: 'bold' }}>Tunggu 5 menit agar server jalan</p>
             <form onSubmit={handleSearch}>
                 <input
                     type="text"
